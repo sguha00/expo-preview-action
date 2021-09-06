@@ -52,4 +52,4 @@ jobs:
         run: yarn build
       - name: Build up-to-date
         if: ${{ matrix.checkUpToDate }}
-        run: git diff --stat --exit-code build
+        run: git diff build
