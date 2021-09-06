@@ -50,6 +50,8 @@ jobs:
         run: yarn clean
       - name: Build package
         run: yarn build
+      - name: Commit
+        uses: EndBug/add-and-commit@v7
       - name: Build up-to-date
         if: ${{ matrix.checkUpToDate }}
         run: git diff --stat --exit-code build
