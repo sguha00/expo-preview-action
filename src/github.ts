@@ -14,7 +14,7 @@ function getDiffInfo(): { base: string; head: string } {
 		base = pullRequestBase.sha;
 		head = pullRequestHead.sha;
 	} else if (eventName === 'push') {
-		base = context.payload.before;
+		base = context.payload.base_ref || context.payload.before;
 		head = context.payload.after;
 	} else {
 		throw new Error(
