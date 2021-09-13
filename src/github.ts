@@ -36,25 +36,29 @@ async function getChangedFiles(config: GithubConfig): Promise<string[]> {
 	info(`Base commit: ${diffInfo.base}`);
 	info(`Head commit: ${diffInfo.head}`);
 
-	const compareResponse = await client.rest.repos.compareCommits({
-		...diffInfo,
-		owner: context.repo.owner,
-		repo: context.repo.repo,
-	});
+	try {
+		const compareResponse = await client.rest.repos.compareCommitsWithBasehead({
+			basehead: `${diffInfo.base}...${diffInfo.head}`,
+			owner: context.repo.owner,
+			repo: context.repo.repo,
+		});
 
-	if (compareResponse.status !== 200) {
-		throw new Error(
-			`The GitHub API for comparing the base and head commits for this ${context.eventName} event returned ${compareResponse.status}, expected 200.`
-		);
-	}
+		if (compareResponse.status !== 200) {
+			throw new Error(
+				`The GitHub API for comparing the base and head commits for this ${context.eventName} event returned ${compareResponse.status}, expected 200.`
+			);
+		}
 
-	if (compareResponse.data.status !== 'ahead') {
-		warning(`The head commit for this ${context.eventName} event is not ahead of the base commit.`);
-		warning('Skipping the changed file check.');
+		if (compareResponse.data.status !== 'ahead') {
+			warning(`The head commit for this ${context.eventName} event is not ahead of the base commit.`);
+			warning('Skipping the changed file check.');
+			return [];
+		}
+
+		return (compareResponse.data.files || []).map(file => file.filename);
+	} catch {
 		return [];
 	}
-
-	return (compareResponse.data.files || []).map(file => file.filename);
 }
 
 export async function needNewDevClientBuild(config: GithubConfig & ProjectConfig): Promise<boolean> {
